@@ -76,6 +76,8 @@ First run takes ~10-30s for the LSP server to index (cached after that).
 | `get_outgoing_calls` | What does this function call? |
 | `rename_symbol` | Rename across entire workspace |
 | `rename_symbol_strict` | Rename at exact position |
+| `get_code_actions` | List available code actions at a position/range |
+| `apply_code_action` | Apply a code action by title |
 | `restart_server` | Restart LSP if it gets stuck |
 
 ### `execute_command` (new in this fork)
@@ -119,6 +121,43 @@ Modified files:
 
 This works with any LSP server that supports custom commands — not just clojure-lsp.
 
+### Code Actions
+
+Code actions provide LSP-powered refactorings and quick fixes. Use the two-step workflow:
+
+1. **`get_code_actions`** — discover what's available at a position or range
+2. **`apply_code_action`** — apply one by its title
+
+**Example — extract function:**
+
+```
+> Using cclsp.get_code_actions
+  file_path: "src/core.ts"
+  line: 10
+  character: 1
+  end_line: 25
+  end_character: 1
+
+Result: 3 code action(s) available:
+  1. Extract function
+  2. Extract constant
+  3. Move to a new file
+
+> Using cclsp.apply_code_action
+  file_path: "src/core.ts"
+  line: 10
+  character: 1
+  end_line: 25
+  end_character: 1
+  title: "Extract function"
+
+Result: Applying code action: "Extract function"
+Modified files:
+- /path/to/src/core.ts
+```
+
+Code actions work with any LSP server — the available actions depend on what the server supports (e.g., clojure-lsp offers `clean-ns`, `thread-first`, etc. as code actions too).
+
 ## Configuration
 
 ### Multi-project setup
@@ -151,6 +190,7 @@ This works with any LSP server that supports custom commands — not just clojur
 - `command`: Command array to spawn the LSP server
 - `rootDir`: Working directory for the LSP server (optional, defaults to `.`)
 - `restartInterval`: Auto-restart interval in minutes (optional)
+- `requestTimeout`: Default timeout for LSP requests in milliseconds (optional, default: 30000)
 - `initializationOptions`: LSP server initialization options (optional)
 
 ### Alternative: setup wizard

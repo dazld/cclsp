@@ -45,7 +45,7 @@ npm run prepublishOnly  # build + test + typecheck
 **MCP Server Layer** (`index.ts`)
 
 - Entry point that implements MCP protocol
-- Exposes `find_definition`, `find_references`, and `rename_symbol` tools
+- Exposes LSP tools including `find_definition`, `find_references`, `rename_symbol`, `get_code_actions`, `apply_code_action`, and more
 - Handles MCP client requests and delegates to LSP layer
 - Includes subcommand handling for `cclsp setup`
 
@@ -86,7 +86,7 @@ npm run prepublishOnly  # build + test + typecheck
 The system spawns separate LSP server processes per configuration. Each server:
 
 - Runs as child process with stdio communication
-- Maintains its own initialization state
+- Initializes non-blocking (operations wait on `initializationPromise`)
 - Handles multiple concurrent requests
 - Gets terminated on process exit
 
@@ -119,6 +119,7 @@ Each server config requires:
 - `command`: Command array to spawn LSP server
 - `rootDir`: Working directory for LSP server (optional)
 - `restartInterval`: Auto-restart interval in minutes (optional, helps with long-running server stability, minimum 1 minute)
+- `requestTimeout`: Default timeout for LSP requests in milliseconds (optional, default: 30000)
 
 ### Example Configuration
 
@@ -161,7 +162,8 @@ The implementation handles LSP protocol specifics:
 - Content-Length headers for message framing
 - JSON-RPC 2.0 message format
 - Request/response correlation via ID tracking
-- Server initialization handshake
+- Non-blocking server initialization (fires `initialize`, operations await readiness)
+- Configurable per-server request timeouts
 - Proper process cleanup on shutdown
 - Preloading of servers for detected file types
 - Automatic server restart based on configured intervals

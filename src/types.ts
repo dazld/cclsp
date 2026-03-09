@@ -4,6 +4,7 @@ export interface LSPServerConfig {
   rootDir?: string;
   restartInterval?: number; // in minutes, optional auto-restart interval
   initializationOptions?: unknown; // LSP initialization options
+  requestTimeout?: number; // in milliseconds, default timeout for LSP requests (default: 30000)
 }
 
 export interface Config {

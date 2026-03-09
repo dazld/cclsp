@@ -1068,6 +1068,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1107,6 +1108,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1164,6 +1166,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       // Mock servers map
@@ -1201,6 +1204,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       (client as any).serverManager.getRunningServers().set('test-key', mockServerState);
@@ -1243,6 +1247,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1290,6 +1295,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1321,6 +1327,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1370,6 +1377,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1409,6 +1417,7 @@ describe('LSPClient', () => {
         initialized: true,
         documentManager: createMockDocumentManager(),
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1479,6 +1488,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1526,6 +1536,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1594,6 +1605,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(
@@ -1641,6 +1653,7 @@ describe('LSPClient', () => {
         transport: mockTransport,
         initialized: true,
         adapter: undefined,
+        defaultTimeout: 30000,
       };
 
       const getServerSpy = spyOn(

@@ -128,6 +128,8 @@ export class ServerManager {
     const documentManager = new DocumentManager(transport);
     const diagnosticsCache = new DiagnosticsCache();
 
+    const defaultTimeout = serverConfig.requestTimeout ?? 30000;
+
     const serverState: ServerState = {
       process: childProcess,
       transport,
@@ -139,6 +141,7 @@ export class ServerManager {
       restartTimer: undefined,
       diagnosticsCache,
       adapter,
+      defaultTimeout,
     };
 
     // Store the resolve function to call when initialized notification is received
@@ -268,31 +271,37 @@ export class ServerManager {
       ? adapter.customizeInitializeParams(initializeParams)
       : initializeParams;
 
-    const initResult = await transport.sendRequest('initialize', finalParams);
-
-    // Send the initialized notification after receiving the initialize response
-    transport.sendNotification('initialized', {});
-
-    // Wait for the server to send the initialized notification back with timeout
-    const INITIALIZATION_TIMEOUT = 3000; // 3 seconds
-    try {
-      await Promise.race([
-        initializationPromise,
-        new Promise<void>((_, reject) =>
-          setTimeout(() => reject(new Error('Initialization timeout')), INITIALIZATION_TIMEOUT)
-        ),
-      ]);
-    } catch (error) {
-      // If timeout or initialization fails, mark as initialized anyway
-      logger.debug(
-        `[DEBUG startServer] Initialization timeout or failed for ${serverConfig.command.join(' ')}, proceeding anyway: ${error}\n`
-      );
-      serverState.initialized = true;
-      if (serverState.initializationResolve) {
-        serverState.initializationResolve();
-        serverState.initializationResolve = undefined;
-      }
-    }
+    // Fire initialize request in the background — don't block server startup.
+    // Individual operations await serverState.initializationPromise before making requests.
+    transport
+      .sendRequest('initialize', finalParams, defaultTimeout)
+      .then(() => {
+        transport.sendNotification('initialized', {});
+        logger.debug(
+          `[DEBUG startServer] Initialize response received for ${serverConfig.command.join(' ')}, sent initialized notification\n`
+        );
+        // Resolve initializationPromise after a short delay to allow the server
+        // to process the initialized notification
+        setTimeout(() => {
+          serverState.initialized = true;
+          if (serverState.initializationResolve) {
+            serverState.initializationResolve();
+            serverState.initializationResolve = undefined;
+          }
+        }, 500);
+      })
+      .catch((error) => {
+        logger.error(
+          `[DEBUG startServer] Initialize failed for ${serverConfig.command.join(' ')}: ${error}\n`
+        );
+        // Mark as initialized anyway so operations can attempt requests
+        // (they may fail, but at least they won't hang forever)
+        serverState.initialized = true;
+        if (serverState.initializationResolve) {
+          serverState.initializationResolve();
+          serverState.initializationResolve = undefined;
+        }
+      });
 
     // Set up auto-restart timer if configured
     this.setupRestartTimer(serverState);

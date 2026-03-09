@@ -85,6 +85,7 @@ export interface ServerState {
     ): Promise<void>;
   };
   adapter?: ServerAdapter;
+  defaultTimeout: number;
 }
 
 /**

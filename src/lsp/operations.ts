@@ -208,7 +208,7 @@ export async function findDefinition(
 
   logger.debug('[DEBUG findDefinition] Sending textDocument/definition request\n');
   const method = 'textDocument/definition';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -267,7 +267,7 @@ export async function findReferences(
   }
 
   const method = 'textDocument/references';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -317,7 +317,7 @@ export async function renameSymbol(
 
   logger.debug('[DEBUG renameSymbol] Sending textDocument/rename request\n');
   const method = 'textDocument/rename';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -396,7 +396,7 @@ export async function getDocumentSymbols(
   await serverState.documentManager.ensureOpen(filePath);
 
   const method = 'textDocument/documentSymbol';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
 
   const result = await serverState.transport.sendRequest(
     method,
@@ -659,6 +659,43 @@ export async function getDiagnostics(
   }
 }
 
+export async function codeAction(
+  serverState: ServerState,
+  filePath: string,
+  range: { start: Position; end: Position },
+  diagnostics: Diagnostic[] = []
+): Promise<unknown[]> {
+  logger.debug(
+    `[DEBUG codeAction] Requesting code actions for ${filePath} at ${range.start.line}:${range.start.character}-${range.end.line}:${range.end.character}\n`
+  );
+
+  await serverState.initializationPromise;
+  await serverState.documentManager.ensureOpen(filePath);
+
+  const method = 'textDocument/codeAction';
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
+  const result = await serverState.transport.sendRequest(
+    method,
+    {
+      textDocument: { uri: pathToUri(filePath) },
+      range,
+      context: {
+        diagnostics,
+        triggerKind: 1, // Invoked
+      },
+    },
+    timeout
+  );
+
+  logger.debug(`[DEBUG codeAction] Result: ${JSON.stringify(result)?.slice(0, 500)}\n`);
+
+  if (Array.isArray(result)) {
+    return result;
+  }
+
+  return [];
+}
+
 export async function executeCommand(
   serverState: ServerState,
   filePath: string,
@@ -673,7 +710,7 @@ export async function executeCommand(
   await serverState.documentManager.ensureOpen(filePath);
 
   const method = 'workspace/executeCommand';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -704,7 +741,7 @@ export async function hover(
   await serverState.documentManager.ensureOpen(filePath);
 
   const method = 'textDocument/hover';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -733,7 +770,7 @@ export async function workspaceSymbol(
   await serverState.initializationPromise;
 
   const method = 'workspace/symbol';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(method, { query }, timeout);
 
   if (Array.isArray(result)) {
@@ -756,7 +793,7 @@ export async function findImplementation(
   await serverState.documentManager.ensureOpen(filePath);
 
   const method = 'textDocument/implementation';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -793,7 +830,7 @@ export async function prepareCallHierarchy(
   await serverState.documentManager.ensureOpen(filePath);
 
   const method = 'textDocument/prepareCallHierarchy';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(
     method,
     {
@@ -819,7 +856,7 @@ export async function incomingCalls(
   await serverState.initializationPromise;
 
   const method = 'callHierarchy/incomingCalls';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(method, { item }, timeout);
 
   if (Array.isArray(result)) {
@@ -838,7 +875,7 @@ export async function outgoingCalls(
   await serverState.initializationPromise;
 
   const method = 'callHierarchy/outgoingCalls';
-  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? serverState.defaultTimeout;
   const result = await serverState.transport.sendRequest(method, { item }, timeout);
 
   if (Array.isArray(result)) {

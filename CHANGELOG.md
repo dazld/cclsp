@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-03-09
+
+### Added
+
+- **Code Actions Tools**: Two new MCP tools for LSP code actions
+  - `get_code_actions` — list available refactorings, quick fixes, and other actions at a position or range
+  - `apply_code_action` — apply a code action by title (supports exact, case-insensitive, and partial matching)
+  - Handles both workspace edits and command-based actions
+  - Works with any LSP server that supports `textDocument/codeAction`
+
+- **Configurable Request Timeout**: New `requestTimeout` server config option
+  - Per-server timeout for LSP requests in milliseconds (default: 30000)
+  - Useful for slow LSP servers like clojure-lsp on large projects with many dependencies
+
+### Changed
+
+- **Non-blocking LSP Initialization**: Server startup no longer blocks on the `initialize` handshake
+  - The MCP server stays responsive while LSP servers initialize in the background
+  - Individual operations wait on `initializationPromise` before making requests
+  - Prevents MCP client timeouts during slow LSP server startups (e.g., clojure-lsp indexing hundreds of JARs)
+
+## [0.8.0] - 2026-03-08
+
+### Changed
+
+- **Fork adopted**: Forked from [ktnyt/cclsp](https://github.com/ktnyt/cclsp), updated references
+- Added `execute_command` tool for invoking `workspace/executeCommand`
+- Major refactoring: extracted tool handlers, LSP operations, diagnostics, document management, and server management into dedicated modules
+- Added structured logger with `CCLSP_LOG_LEVEL` env var
+- Added server adapter system (Vue Language Server, Pyright)
+- Added call hierarchy support (`prepare_call_hierarchy`, `get_incoming_calls`, `get_outgoing_calls`)
+- Added hover, diagnostics, workspace symbols, and implementation tools
+- Added graceful degradation for LSP server failures
+- Added file editing capability with atomic operations and rollback
+
 ## [0.6.1] - 2025-10-20
 
 ### Enhanced

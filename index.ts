@@ -4,6 +4,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { logger } from './src/logger.js';
 import { LSPClient } from './src/lsp-client.js';
+import { codeActionTools } from './src/tools/code-actions.js';
 import { diagnosticsTools } from './src/tools/diagnostics.js';
 import { executeCommandTools } from './src/tools/execute-command.js';
 import { hoverTools } from './src/tools/hover.js';
@@ -55,6 +56,7 @@ const allTools = [
   ...symbolTools,
   ...serverTools,
   ...executeCommandTools,
+  ...codeActionTools,
 ];
 
 registerTools(server, allTools, lspClient);
