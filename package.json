@@ -1,6 +1,6 @@
 {
-  "name": "cclsp",
-  "version": "0.7.0",
+  "name": "@dazld/cclsp",
+  "version": "0.8.0",
   "description": "MCP server for accessing LSP functionality",
   "main": "dist/index.js",
   "bin": {
@@ -33,11 +33,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ktnyt/cclsp.git"
+    "url": "https://github.com/dazld/cclsp.git"
   },
-  "homepage": "https://github.com/ktnyt/cclsp#readme",
+  "homepage": "https://github.com/dazld/cclsp#readme",
   "bugs": {
-    "url": "https://github.com/ktnyt/cclsp/issues"
+    "url": "https://github.com/dazld/cclsp/issues"
   },
   "files": [
     "dist",

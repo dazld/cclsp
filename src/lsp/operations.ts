@@ -659,6 +659,35 @@ export async function getDiagnostics(
   }
 }
 
+export async function executeCommand(
+  serverState: ServerState,
+  filePath: string,
+  command: string,
+  args: unknown[] = []
+): Promise<unknown> {
+  logger.debug(
+    `[DEBUG executeCommand] Executing "${command}" for ${filePath} with args: ${JSON.stringify(args)}\n`
+  );
+
+  await serverState.initializationPromise;
+  await serverState.documentManager.ensureOpen(filePath);
+
+  const method = 'workspace/executeCommand';
+  const timeout = serverState.adapter?.getTimeout?.(method) ?? 30000;
+  const result = await serverState.transport.sendRequest(
+    method,
+    {
+      command,
+      arguments: args,
+    },
+    timeout
+  );
+
+  logger.debug(`[DEBUG executeCommand] Result: ${JSON.stringify(result)}\n`);
+
+  return result;
+}
+
 export async function hover(
   serverState: ServerState,
   filePath: string,

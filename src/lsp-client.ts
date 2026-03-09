@@ -5,6 +5,7 @@ import { logger } from './logger.js';
 import { loadConfig } from './lsp/config.js';
 import {
   getValidSymbolKinds,
+  executeCommand as opsExecuteCommand,
   findDefinition as opsFindDefinition,
   findImplementation as opsFindImplementation,
   findReferences as opsFindReferences,
@@ -224,6 +225,11 @@ export class LSPClient {
     logger.debug(`[getServer] Found server config: ${serverConfig.command.join(' ')}\n`);
 
     return this.serverManager.getServer(serverConfig);
+  }
+
+  async executeCommand(filePath: string, command: string, args: unknown[] = []): Promise<unknown> {
+    const serverState = await this.getServer(filePath);
+    return opsExecuteCommand(serverState, filePath, command, args);
   }
 
   async findDefinition(filePath: string, position: Position): Promise<Location[]> {
