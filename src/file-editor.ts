@@ -169,12 +169,23 @@ export async function applyWorkspaceEdit(
       }
     }
 
+    // Clean up backup files after successful apply
+    for (const backup of backups) {
+      if (backup.backupPath) {
+        try {
+          if (existsSync(backup.backupPath)) {
+            unlinkSync(backup.backupPath);
+          }
+        } catch (cleanupError) {
+          logger.debug(`Failed to clean up backup ${backup.backupPath}: ${cleanupError}\n`);
+        }
+      }
+    }
+
     return {
       success: true,
       filesModified,
-      backupFiles: backups
-        .filter((b): b is FileBackup & { backupPath: string } => !!b.backupPath)
-        .map((b) => b.backupPath),
+      backupFiles: [],
     };
   } catch (error) {
     // Rollback: restore original files from backups
