@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { applyWorkspaceEdit, cleanupBackups } from './file-editor.js';
+import { applyWorkspaceEdit } from './file-editor.js';
 import { pathToUri } from './utils.js';
 
 const TEST_DIR = join(tmpdir(), 'file-editor-test');
@@ -174,7 +174,7 @@ describe('file-editor', () => {
       expect(content2).toBe('import { newName } from "./file1";\nconsole.log(newName);');
     });
 
-    it('should create backup files when requested', async () => {
+    it('should clean up backup files on success', async () => {
       const filePath = join(TEST_DIR, 'test.ts');
       const originalContent = 'const oldName = 42;';
       writeFileSync(filePath, originalContent);
@@ -197,14 +197,9 @@ describe('file-editor', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.backupFiles.length).toBe(1);
-      const backupFile = result.backupFiles[0];
-      expect(backupFile).toBeDefined();
-      if (backupFile) {
-        expect(existsSync(backupFile)).toBe(true);
-        const backupContent = readFileSync(backupFile, 'utf-8');
-        expect(backupContent).toBe(originalContent);
-      }
+      expect(result.backupFiles).toEqual([]);
+      // Backup file should have been cleaned up
+      expect(existsSync(`${filePath}.bak`)).toBe(false);
     });
 
     it('should skip backup creation when disabled', async () => {
@@ -416,28 +411,32 @@ describe('file-editor', () => {
     });
   });
 
-  describe('cleanupBackups', () => {
-    it('should remove backup files', () => {
-      const backup1 = join(TEST_DIR, 'file1.ts.bak');
-      const backup2 = join(TEST_DIR, 'file2.ts.bak');
+  describe('backup retention on failure', () => {
+    it('should not leave backup files when edit fails', async () => {
+      const filePath = join(TEST_DIR, 'test.ts');
+      writeFileSync(filePath, 'const x = 1;');
 
-      writeFileSync(backup1, 'backup content 1');
-      writeFileSync(backup2, 'backup content 2');
+      const result = await applyWorkspaceEdit(
+        {
+          changes: {
+            [pathToUri(filePath)]: [
+              {
+                range: {
+                  start: { line: 5, character: 0 },
+                  end: { line: 5, character: 5 },
+                },
+                newText: 'invalid',
+              },
+            ],
+          },
+        },
+        { createBackups: true, validateBeforeApply: true }
+      );
 
-      expect(existsSync(backup1)).toBe(true);
-      expect(existsSync(backup2)).toBe(true);
-
-      cleanupBackups([backup1, backup2]);
-
-      expect(existsSync(backup1)).toBe(false);
-      expect(existsSync(backup2)).toBe(false);
-    });
-
-    it('should handle non-existent backup files gracefully', () => {
-      const nonExistent = join(TEST_DIR, 'non-existent.bak');
-
-      // Should not throw
-      cleanupBackups([nonExistent]);
+      expect(result.success).toBe(false);
+      expect(result.backupFiles).toEqual([]);
+      // Backup should be cleaned up after rollback
+      expect(existsSync(`${filePath}.bak`)).toBe(false);
     });
   });
 });

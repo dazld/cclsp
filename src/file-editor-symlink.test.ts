@@ -203,7 +203,7 @@ describe.skipIf(!canCreateSymlinks() || !!process.env.CI)('file-editor symlink h
     expect(readFileSync(regularFile, 'utf-8')).toBe('class NewClass3 {}');
   });
 
-  it('should create backups of the target file, not the symlink', async () => {
+  it('should clean up backups after successful edit through symlink', async () => {
     const targetPath = join(TEST_DIR, 'target.ts');
     const symlinkPath = join(TEST_DIR, 'link.ts');
 
@@ -228,20 +228,12 @@ describe.skipIf(!canCreateSymlinks() || !!process.env.CI)('file-editor symlink h
     );
 
     expect(result.success).toBe(true);
+    expect(result.backupFiles).toEqual([]);
+    // Backup should have been cleaned up
+    expect(existsSync(`${targetPath}.bak`)).toBe(false);
 
-    // The backup should be of the target file (which may be the resolved path)
-    expect(result.backupFiles.length).toBe(1);
-    const backupPath = result.backupFiles[0];
-    expect(backupPath).toBeDefined();
-    expect(backupPath?.endsWith('.bak')).toBe(true);
-
-    if (backupPath) {
-      expect(existsSync(backupPath)).toBe(true);
-      expect(readFileSync(backupPath, 'utf-8')).toBe('const x = 1;');
-
-      // Clean up backup
-      rmSync(backupPath);
-    }
+    // Content should still be updated
+    expect(readFileSync(targetPath, 'utf-8')).toBe('const x = 2;');
   });
 
   it('should handle rollback correctly when editing through symlink fails', async () => {
