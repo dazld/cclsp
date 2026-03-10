@@ -8,7 +8,7 @@
 
 **cclsp** is an MCP server that bridges Language Server Protocol (LSP) servers with LLM-based coding agents via the Model Context Protocol. It provides robust symbol resolution that handles the line/column imprecision common with AI assistants.
 
-This fork adds `execute_command` — a generic tool for invoking `workspace/executeCommand`, unlocking the full power of language-server-specific commands (e.g., clojure-lsp's `clean-ns`, `extract-function`, `thread-first`, etc.).
+This fork adds `execute_command` — a generic tool for invoking `workspace/executeCommand`, and `codeActions` unlocking the full power of language-server-specific commands (e.g., clojure-lsp's `clean-ns`, `extract-function`, `thread-first`, etc.).
 
 ## Quick Start
 
